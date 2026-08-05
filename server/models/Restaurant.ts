@@ -51,16 +51,14 @@ const RestaurantSchema = new Schema<IRestaurant>(
     featured: { type: Boolean, default: false },
     exclusive: { type: Boolean, default: false },
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    totalSeats: { type: Number, default: 20 },
   },
   { timestamps: true },
 );
 
-// Remove password when converting to JSON
-UserSchema.set("toJSON", {
-  transform: (doc, ret) => {
-    delete ret.password;
-    return ret;
-  },
-});
-
-export const User = model<IUser>("User", UserSchema);
+export const Restaurant = model<IRestaurant>("User", RestaurantSchema);
