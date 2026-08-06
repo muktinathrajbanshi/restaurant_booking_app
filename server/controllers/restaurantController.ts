@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { Restaurant } from "../models/Restaurant.js";
+import jwt from "jsonwebtoken";
+import { User } from "../models/User.js";
 
 // Get all restaurants with search and filters
 // GET /api/restaurants
@@ -77,6 +79,48 @@ export const getRestaurantBySlug = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const restaurant = await Restaurant.findOne({ slug: req.params.slug });
+    if (!restaurant) {
+      res.status(404).json({ message: "Restaurant not found" });
+      return;
+    }
+
+    // If not approved, verify authorization (owner or admin)
+    if (restaurant.status !== "approved") {
+      let isAuthorized = false;
+      if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith("Bearer")
+      ) {
+        try {
+          const token = req.headers.authorization.split(" ")[1];
+          const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET as string,
+          ) as { id: string };
+
+          const user = await User.findById(decoded.id);
+          if (
+            user &&
+            (user.role === "admin" ||
+              (user.role === "owner" &&
+                restaurant.owner.toString() === user?._id.toString()))
+          ) {
+            isAuthorized = true;
+          }
+        } catch (err) {
+          // Ignore token verify error
+        }
+      }
+      if (!isAuthorized) {
+        res
+          .status(404)
+          .json({ message: "Restaurant not found or pending approval" });
+        return;
+      }
+    }
+
+    res.json(restaurant);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
