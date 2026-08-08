@@ -56,6 +56,25 @@ export const createBooking = async (
         message: `Unable to reserve. Only ${availableSeats} seats are available for this time slot.`,
       });
     }
+
+    const booking = await Booking.create({
+      user: req.user?._id,
+      restaurant: restaurantId,
+      date: new Date(date),
+      time,
+      guests: Number(guests),
+      occasion,
+      specialRequests,
+      status: "confirmed",
+    });
+
+    // Populate restaurant info before returning
+    const populatedBooking = await booking.populate(
+      "restaurant",
+      "name location image address",
+    );
+
+    res.status(201).json(populatedBooking);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
@@ -70,6 +89,11 @@ export const getMyBookings = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const bookings = await Booking.find({ user: req.user?._id })
+      .populate("restaurant", "name location image address slug")
+      .sort({ date: -1, time: -1 });
+
+    res.json(bookings);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
@@ -84,6 +108,29 @@ export const cancelBooking = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      res.status(404).json({ message: "Booking not found" });
+      return;
+    }
+
+    // Verify user owns the booking
+    if (booking.user.toString() !== req.user?._id.toString()) {
+      res
+        .status(401)
+        .json({ message: "Not authorized to cancel this booking" });
+      return;
+    }
+
+    booking.status = "cancelled";
+    await booking.save();
+
+    const populatedBooking = await booking.populate(
+      "restaurant",
+      "name location image address",
+    );
+    res.json(populatedBooking);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
