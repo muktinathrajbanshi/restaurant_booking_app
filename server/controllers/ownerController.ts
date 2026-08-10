@@ -91,7 +91,26 @@ export const createOwnerRestaurant = async (
     const parsedSlots =
       typeof availableSlots === "string"
         ? availableSlots.split(",").map((s) => s.trim())
-        : availableSlots || ["17:00", "18:00", "19:00", "20:00"];
+        : availableSlots || ["17:00", "18:00", "19:00", "20:00", "21:00"];
+
+    const restaurant = await Restaurant.create({
+      name,
+      slug,
+      description,
+      cuisine,
+      priceRange,
+      location,
+      address,
+      chef,
+      image: imageUrl,
+      tags: parsedTags,
+      availableSlots: parsedSlots,
+      totalSeats: totalSeats ? Number(totalSeats) : 20,
+      owner: req.user?._id,
+      status: "pending",
+    });
+
+    res.status(201).json(restaurant);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
