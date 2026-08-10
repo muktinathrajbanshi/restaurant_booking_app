@@ -1,6 +1,24 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.js";
 import { Restaurant } from "../models/Restaurant.js";
+import { v2 as cloudinary } from "cloudinary";
+
+// Helper function to upload buffer to Cloudinary
+const uploadToCloudinary = (
+  fileBuffer: Buffer,
+): Promise<{ secure_url: string }> => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "QuickDine" },
+      (error, result) => {
+        if (error) return reject(error);
+        if (!result) return reject(new Error("Upload failed"));
+        resolve({ secure_url: result.secure_url });
+      },
+    );
+    stream.end(fileBuffer);
+  });
+};
 
 // Get owner's restaurant
 // GET /api/owner/restaurant
