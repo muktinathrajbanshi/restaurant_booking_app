@@ -46,7 +46,7 @@ export const createOwnerRestaurant = async (
       address,
       chef,
       tags,
-      availableSeats,
+      availableSlots,
       totalSeats,
     } = req.body;
 
@@ -78,6 +78,20 @@ export const createOwnerRestaurant = async (
     }
 
     // Handle image
+    let imageUrl = "";
+    if (req.file) {
+      // handle image upload
+    }
+
+    // Setup parsed tags and slots
+    const parsedTags =
+      typeof tags === "string"
+        ? tags.split(",").map((t) => t.trim())
+        : tags || [];
+    const parsedSlots =
+      typeof availableSlots === "string"
+        ? availableSlots.split(",").map((s) => s.trim())
+        : availableSlots || ["17:00", "18:00", "19:00", "20:00"];
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
