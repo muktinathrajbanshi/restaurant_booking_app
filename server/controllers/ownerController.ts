@@ -2,6 +2,7 @@ import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.js";
 import { Restaurant } from "../models/Restaurant.js";
 import { v2 as cloudinary } from "cloudinary";
+import { Booking } from "../models/Booking.js";
 
 // Helper function to upload buffer to Cloudinary
 const uploadToCloudinary = (
@@ -207,7 +208,7 @@ export const getOwnerBookings = async (
     const restaurant = await Restaurant.findOne({ owner: req.user?._id });
 
     if (!restaurant) {
-      res.tatus(404).json({ message: "Restaurant profile not found" });
+      res.status(404).json({ message: "Restaurant profile not found" });
       return;
     }
 
@@ -229,6 +230,28 @@ export const updateBookingStatus = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const { status } = req.body;
+    if (!status || !["confirmed", "completed", "completed"].includes(status)) {
+      res.status(400).json({ message: "Please enter a valid booking status" });
+      return;
+    }
+
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      res.status(404).json({ message: "Booking not found" });
+      return;
+    }
+
+    // Verify booking belongs to the owner's restaurant
+    const restaurant = await Restaurant.findById(booking.restaurant);
+    if (
+      !restaurant ||
+      restaurant.owner.toString() !== req.user?._id.toString()
+    ) {
+      res
+        .status(401)
+        .json({ message: "Not authorized to manage this booking" });
+    }
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
