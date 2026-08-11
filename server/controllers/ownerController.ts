@@ -28,6 +28,7 @@ export const getOwnerRestaurant = async (
 ): Promise<void> => {
   try {
     const restaurant = await Restaurant.findOne({ owner: req.user?._id });
+
     if (!restaurant) {
       res.status(200).json(null);
       return;
@@ -169,6 +170,27 @@ export const updateOwnerRestaurant = async (
     if (address) restaurant.address = address;
     if (chef) restaurant.chef = chef;
     if (totalSeats) restaurant.totalSeats = Number(totalSeats);
+
+    if (tags) {
+      restaurant.tags =
+        typeof tags === "string" ? tags.split(",").map((t) => t.trim()) : tags;
+    }
+
+    if (availableSlots) {
+      restaurant.availableSlots =
+        typeof availableSlots === "string"
+          ? availableSlots.split(",").map((s) => s.trim())
+          : availableSlots;
+    }
+
+    // Handle new image upload if any
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      restaurant.image = result.secure_url;
+    }
+
+    const updated = await restaurant.save();
+    res.json(updated);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
@@ -182,6 +204,18 @@ export const getOwnerBookings = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const restaurant = await Restaurant.findOne({ owner: req.user?._id });
+
+    if (!restaurant) {
+      res.tatus(404).json({ message: "Restaurant profile not found" });
+      return;
+    }
+
+    const bookings = await Booking.find({ restaurant: restaurant._id })
+      .populate("user", "name email phone")
+      .sort({ date: -1, time: -1 });
+
+    res.json(bookings);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
