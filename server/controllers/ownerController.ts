@@ -98,7 +98,8 @@ export const createOwnerRestaurant = async (
     // Handle image
     let imageUrl = "";
     if (req.file) {
-      // handle image upload
+      const result = await uploadToCloudinary(req.file.buffer);
+      imageUrl = result.secure_url;
     }
 
     // Setup parsed tags and slots
@@ -142,6 +143,32 @@ export const updateOwnerRestaurant = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const restaurant = await Restaurant.findOne({ owner: req.user?._id });
+    if (!restaurant) {
+      return;
+    }
+
+    const {
+      name,
+      description,
+      cuisine,
+      priceRange,
+      location,
+      address,
+      chef,
+      tags,
+      availableSlots,
+      totalSeats,
+    } = req.body;
+
+    if (name) restaurant.name = name;
+    if (description) restaurant.description = description;
+    if (cuisine) restaurant.cuisine = cuisine;
+    if (priceRange) restaurant.priceRange = priceRange;
+    if (location) restaurant.location = location;
+    if (address) restaurant.address = address;
+    if (chef) restaurant.chef = chef;
+    if (totalSeats) restaurant.totalSeats = Number(totalSeats);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
