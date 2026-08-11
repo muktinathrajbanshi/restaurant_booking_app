@@ -251,7 +251,12 @@ export const updateBookingStatus = async (
       res
         .status(401)
         .json({ message: "Not authorized to manage this booking" });
+      return;
     }
+
+    booking.status = status;
+    await booking.save();
+    res.json(booking);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
