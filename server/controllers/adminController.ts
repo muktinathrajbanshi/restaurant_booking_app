@@ -1,6 +1,8 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.js";
 import { Restaurant } from "../models/Restaurant.js";
+import { User } from "../models/User.js";
+import { Booking } from "../models/Booking.js";
 
 // Get all restaurants for admin management
 // GET /api/admin/restaurants
@@ -58,6 +60,32 @@ export const getAdminStats = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const totalUsers = await User.countDocuments({ role: "user" });
+    const totalOwners = await User.countDocuments({ role: "owner" });
+    const totalBookings = await Booking.countDocuments({});
+    const totalRestaurants = await Restaurant.countDocuments({});
+
+    // Get latest 10 bookings
+    const latestBookings = await Booking.find({})
+      .populate("user", "name email")
+      .populate("restaurant", "name")
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.json({
+      users: {
+        totalUsers,
+        totalOwners,
+        total: totalUsers + totalOwners,
+      },
+      restaurants: {
+        total: totalRestaurants,
+      },
+      bookings: {
+        total: totalBookings,
+      },
+      latestBookings,
+    });
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
