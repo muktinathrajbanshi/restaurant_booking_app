@@ -1,5 +1,6 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.js";
+import { Restaurant } from "../models/Restaurant.js";
 
 // Get all restaurants for admin management
 // GET /api/admin/restaurants
@@ -8,6 +9,11 @@ export const getAllRestaurants = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const restaurants = await Restaurant.find({})
+      .populate("owner", "name email phone")
+      .sort({ createdAt: -1 });
+
+    res.json(restaurants);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
@@ -21,6 +27,24 @@ export const approveRestaurant = async (
   res: Response,
 ): Promise<void> => {
   try {
+    const { status } = req.body;
+    if (!status || !["approved", "rejected", "pending"].includes(status)) {
+      res
+        .status(400)
+        .json({ message: "Please provide a valid approval status" });
+      return;
+    }
+
+    const restaurant = await Restaurant.findById(req.params.id);
+    if (!restaurant) {
+      res.status(404).json({ message: "Restaurant profile not found" });
+      return;
+    }
+
+    restaurant.status = status;
+    await restaurant.save();
+
+    res.json(restaurant);
   } catch (error: any) {
     console.error(error);
     res.status(400).json({ message: error.message });
