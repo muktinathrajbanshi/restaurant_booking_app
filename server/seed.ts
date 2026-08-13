@@ -228,6 +228,23 @@ const seedData = async () => {
         exclusive: false,
       },
     ];
+
+    console.log("Inserting restaurant...");
+    const updatedRestaurantsData = restaurantsData.map((rest, idx) => {
+      const { ...restInfo } = rest;
+      return {
+        ...restInfo,
+        owner: ownerUser._id,
+        status: "approved",
+        totalSeats: 20 + idx * 5,
+      };
+    });
+
+    await Restaurant.insertMany(updatedRestaurantsData);
+    console.log("Seeding complete! Disconnecting...");
+
+    await mongoose.disconnect();
+    console.log("Disconnected from database");
   } catch (error: any) {
     console.error("Seeding failed:", error);
     process.exit(1);
