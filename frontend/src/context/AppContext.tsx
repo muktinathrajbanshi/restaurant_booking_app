@@ -58,6 +58,7 @@ export const AppContextProvider = ({ children }: Props) => {
       return true;
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -70,12 +71,28 @@ export const AppContextProvider = ({ children }: Props) => {
     phone?: string,
     role?: string,
   ): Promise<boolean> => {
-    console.log(name, email, password, phone, role);
-    setToken(dummyUser.token);
-    setUser(dummyUser as any);
-    setToken(dummyUser.token);
-    localStorage.setItem("token", dummyUser.token);
-    return true;
+    try {
+      setLoading(true);
+      const res = await api.post("/auth/ragister", {
+        name,
+        email,
+        password,
+        phone,
+        role,
+      });
+      const { token: userToken, ...userData } = res.data;
+
+      localStorage.setItem("token", userToken);
+      setToken(userToken);
+      setUser(userData);
+      toast.success(`Welcome to QuickDine Club!`);
+      return true;
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {
