@@ -72,7 +72,7 @@ export const AppContextProvider = ({ children }: Props) => {
   ): Promise<boolean> => {
     try {
       setLoading(true);
-      const res = await api.post("/auth/ragister", {
+      const res = await api.post("/auth/register", {
         name,
         email,
         password,
