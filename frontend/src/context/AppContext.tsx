@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { dummyUser } from "../assets/assets.js";
 import api from "../lib/api.js";
 import toast from "react-hot-toast";
 
@@ -105,7 +104,13 @@ export const AppContextProvider = ({ children }: Props) => {
   useEffect(() => {
     const loadUser = async () => {
       if (token) {
-        setUser(dummyUser as any);
+        try {
+          const res = await api.get("/auth/me");
+          setUser(res.data);
+        } catch (error: any) {
+          toast.error(error?.response?.data?.message || error?.message);
+          logout();
+        }
       }
       setLoading(false);
     };
