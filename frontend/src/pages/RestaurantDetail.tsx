@@ -11,7 +11,7 @@ import RestaurantHero from "../components/restaurant/RestaurantHero.tsx";
 import RestaurantInfo from "../components/restaurant/RestaurantInfo.tsx";
 import RestaurantReviews from "../components/restaurant/RestaurantReviews.tsx";
 import BookingWidget from "../components/restaurant/BookingWidget.tsx";
-import { dummyAvailability, dummyRestaurant } from "../assets/assets.ts";
+import { dummyAvailability } from "../assets/assets.ts";
 import api from "../lib/api.ts";
 
 export default function RestaurantDetail() {
@@ -54,8 +54,14 @@ export default function RestaurantDetail() {
 
   useEffect(() => {
     const fetchAvailability = async () => {
-      setSlotsAvailability(dummyAvailability);
-      setLoadingSlots(false);
+      if (!restaurant?._id || !selectedDate) return;
+      try {
+        setLoadingSlots(true);
+        const res = await api.get(
+          `/restaurants/${restaurant._id}/availability?date=${selectedDate}`,
+        );
+        setSlotsAvailability(res.data);
+      } catch (error) {}
     };
     fetchAvailability();
   }, [restaurant?._id, selectedDate]);
