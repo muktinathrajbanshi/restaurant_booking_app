@@ -37,7 +37,14 @@ export default function RestaurantDetail() {
         setRestaurant(res.data);
 
         // Initialize booking values
-      } catch (error) {}
+        const today = new Date().toISOString().split("T")[0];
+        setSelectedDate(today);
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || error?.message);
+        navigate("/");
+      } finally {
+        setLoading(false);
+      }
     };
 
     if (slug) {
