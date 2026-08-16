@@ -11,7 +11,6 @@ import RestaurantHero from "../components/restaurant/RestaurantHero.tsx";
 import RestaurantInfo from "../components/restaurant/RestaurantInfo.tsx";
 import RestaurantReviews from "../components/restaurant/RestaurantReviews.tsx";
 import BookingWidget from "../components/restaurant/BookingWidget.tsx";
-import { dummyAvailability } from "../assets/assets.ts";
 import api from "../lib/api.ts";
 
 export default function RestaurantDetail() {
@@ -61,7 +60,11 @@ export default function RestaurantDetail() {
           `/restaurants/${restaurant._id}/availability?date=${selectedDate}`,
         );
         setSlotsAvailability(res.data);
-      } catch (error) {}
+      } catch (error: any) {
+        console.error(error);
+      } finally {
+        setLoadingSlots(false);
+      }
     };
     fetchAvailability();
   }, [restaurant?._id, selectedDate]);
