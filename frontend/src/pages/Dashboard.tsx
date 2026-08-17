@@ -49,7 +49,12 @@ export default function Dashboard() {
   // Fetch generic recommendations
   useEffect(() => {
     const fetchRecommendations = async () => {
-      setRecommendations(dummyFeaturedRestaurants);
+      try {
+        const res = await api.get("/restaurants/featured");
+        setRecommendations(res.data);
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || error?.message);
+      }
     };
     fetchRecommendations();
   }, []);
