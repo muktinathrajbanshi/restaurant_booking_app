@@ -18,6 +18,7 @@ import {
   dummyFeaturedRestaurants,
   dummyMyBookingsData,
 } from "../assets/assets.ts";
+import api from "../lib/api.ts";
 
 export default function Dashboard() {
   const { user } = useAppContext();
@@ -29,8 +30,15 @@ export default function Dashboard() {
   // Fetch user bookings
   useEffect(() => {
     const fetchBookings = async () => {
-      setBookings(dummyMyBookingsData);
-      setLoadingBookings(false);
+      try {
+        setLoadingBookings(true);
+        const res = await api.get("/bookings/my");
+        setBookings(res.data);
+      } catch (error: any) {
+        toast.error(error?.response?.data?.message || error?.message);
+      } finally {
+        setLoadingBookings(false);
+      }
     };
 
     if (user) {
