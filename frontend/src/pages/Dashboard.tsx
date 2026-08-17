@@ -65,11 +65,14 @@ export default function Dashboard() {
     }
 
     try {
+      await api.put(`/bookings/${bookingId}/cancel`);
+      // Update local state
       setBookings((prev) =>
         prev.map((b) =>
           b._id === bookingId ? { ...b, status: "cancelled" } : b,
         ),
       );
+
       toast.success("Reservation cancelled successfully.");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.message);
