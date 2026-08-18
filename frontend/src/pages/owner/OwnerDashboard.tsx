@@ -10,8 +10,8 @@ import PendingApproval from "../../components/owner/PendingApproval.tsx";
 import RequestRejected from "../../components/owner/RequestRejected.tsx";
 import OwnerBookings from "../../components/owner/OwnerBookings.tsx";
 import OwnerProfileDetails from "../../components/owner/OwnerProfileDetails.tsx";
-import { dummyMyBookingsData, dummyRestaurant } from "../../assets/assets.ts";
 import api from "../../lib/api.ts";
+import toast from "react-hot-toast";
 
 export default function OwnerDashboard() {
   const { logout } = useAppContext();
@@ -35,7 +35,13 @@ export default function OwnerDashboard() {
           setBookings(bookingsRes.data);
         }
       }
-    } catch (error) {}
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || "Failed to load dashboard data",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
