@@ -46,7 +46,7 @@ export default function AdminDashboard() {
   ) => {
     try {
       setBtnLoading(restaurantId);
-      await api.put(`admin/restaurants/${restaurantId}/approve`, { status });
+      await api.put(`/admin/restaurants/${restaurantId}/approve`, { status });
       toast.success(`Restaurant has been marked as ${status.toUpperCase()}`);
 
       // Reload local list and stats
