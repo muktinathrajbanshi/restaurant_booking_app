@@ -81,11 +81,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    console.log("Email received:", email);
-    console.log("Password received:", password);
-    console.log("User found:", !!user);
-    console.log("Stored hash:", user?.password);
-
     // Check if password matches (user.password is not undefined because we queried it)
     const isMatch = await bcrypt.compare(password, user.password || "");
     if (!isMatch) {
